@@ -25,4 +25,10 @@
 	</beans:bean>
 	
 	<context:component-scan base-package="kr.or" />
+	
+	<!-- Multipart resolves  -->
+	<beans:bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<!-- 1바이트 기준 (1024 * 1024 * 10) -> 10MB --> 
+		<beans:property name="maxUploadSize" value="10485760"></beans:property>
+	</beans:bean>
 </beans:beans>

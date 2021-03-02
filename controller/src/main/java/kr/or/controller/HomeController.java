@@ -1,16 +1,23 @@
 package kr.or.controller;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 import kr.or.vo.FileVO;
@@ -69,4 +76,29 @@ public class HomeController {
 		return new ModelAndView("downloadView", "downloadFile", downloadFile);
 	}
 
+	@PostMapping("upload")
+	@ResponseBody
+	public Map<String, Object> upload(MultipartHttpServletRequest req) {
+		Map<String, Object> map = new HashMap<>();
+		
+		// 파일의 경로를 지정한다.
+		String path = "d:" + File.separator;
+		List<MultipartFile> files = req.getFiles("files");
+
+		try {
+			// d드라이브안에 업로드한 파일을 저장한다.
+			for (MultipartFile mpf : files) {
+				File chkDir = new File(path);
+
+				if(!chkDir.isDirectory()) {
+					chkDir.mkdirs();
+				}
+				FileCopyUtils.copy(mpf.getBytes(), new FileOutputStream(path + new String(mpf.getOriginalFilename().getBytes("8859_1"),"utf-8")));
+			} 
+		}  catch(Exception e) {
+			System.out.println("error - " + e.getMessage());
+			e.printStackTrace();
+		}
+		return map;
+	}
 }
