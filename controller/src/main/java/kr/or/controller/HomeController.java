@@ -32,13 +32,20 @@ public class HomeController {
 
 	@GetMapping("getFileList")
 	@ResponseBody
-	public ArrayList<FileVO> getFileList() {
+	public ArrayList<FileVO> getFileList(@RequestParam(required = false) String param) {
+		
 		// 1. 해야 할일 path 경로를 설정한다
 		String path = "d:";
-
-		// 2. 그 경로의 파일명, 수정일자, 파일 타입, 파일용량을 가져온다. 
-		File chkDir = new File(path);
-
+		
+		File chkDir;
+		
+		if(param != null) {
+			chkDir = new File(path + param);	
+		} else {
+			chkDir = new File(path);
+		}
+		
+//		System.out.println(chkDir);
 		if(!chkDir.isDirectory()) {
 			chkDir.mkdirs();
 		}
@@ -46,6 +53,7 @@ public class HomeController {
 		ArrayList<FileVO> fileList = new ArrayList<>();
 		File[] fileArray = chkDir.listFiles();
 		
+		fileList.add(new FileVO("..", "Folder", null, null));
 		for (File file : fileArray) {
 			String pattern = "yyyy-MM-dd aa hh:mm ";
 			SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
@@ -66,6 +74,19 @@ public class HomeController {
 		Collections.sort(fileList);
 
 		return fileList;
+	}
+	
+	@GetMapping("mkDirFolder")
+	@ResponseBody
+	public String mkDirFolder(@RequestParam Map<String, Object> param) {
+		// 1. 해야 할일 path 경로를 설정한다
+		String path = "d:";
+		
+		File file = new File(path +  param.get("mkDirText"));
+		
+		file.mkdirs();
+		
+		return null;
 	}
 	
 	@GetMapping("getFileDownload")

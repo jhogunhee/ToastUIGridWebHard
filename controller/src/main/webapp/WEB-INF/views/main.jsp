@@ -18,7 +18,7 @@
     <script src="/node_modules/tui-grid/dist/tui-grid.js"></script>
 </head>
 <style>
-.modal-body {
+.upload_modal-body {
 	border: 2px dotted #3292A2;
 	width: 90%;
 	height: 50px;
@@ -29,15 +29,15 @@
 	margin-top: 10px;
 }
 
-.modal-dialog.modal-80size {
+.modal-dialog_upload.modal-80size {
 	width: 80%;
 	height: 50%;
 
-	/* margin: 0;
-	padding: 0; */
+	 margin: 0;
+	padding: 0; 
 }
 
-.modal-content.modal-80size {
+.modal-80size {
 	height: auto;
 	min-height: 50%;
 }
@@ -87,12 +87,32 @@
 			}
 		});  
 		
+		var param = "";
 		grid.on('dblclick', function(e) {
 	        console.log('modifyDate dblclick!', e);
-	        var date = grid.getRow(e.rowKey).modifyDate;
-	        if(date == null)
-	        	alert('디렉토리입니다.');
-	        else {
+	        var date        = grid.getRow(e.rowKey).modifyDate;
+	        var folderName  = grid.getRow(e.rowKey).fileName;
+
+	        // 폴더를 클릭하였을떄 
+	        if(date == null || date == '') {
+	            if(folderName == '..') {
+	  				param = param.substring(0, param.lastIndexOf("/", param.length - 2));
+	  			} else {
+	  				// 상위 폴더를 클릭하였을떄
+					param += folderName + "/";
+	  			}
+	        	$.ajax({
+	        		url : "/getFileList?param=" + param,
+	    			method : "get",
+	    			dataType : "JSON",
+	    			
+	    			error : function() {alert("똑바로 안 했!!!")},
+	    			success : function(result) {
+	    				grid.resetData(result);
+	    			}		
+	        	});
+	        } else {
+	        	// 파일을 클릭하였을떄
 	        	location.href = "getFileDownload?FILE_NAME=" + grid.getRow(e.rowKey).fileName;   
 	        }
 	    });
@@ -142,7 +162,6 @@
 					url         : url,
 					method      : 'POST',
 					data        : data,
-					/* dataType    : 'json', */
 					
 					// 일반적으로 서버에 전달되는 데이터는 query string 이라는 형태로 전달된다
 					// 파일 전송의 경우 이를 하면 안된다.
@@ -162,26 +181,40 @@
 				});
 			}
 		})
+		
+		$('#mkDirText').on('click', function() {
+		   var mkDirText = param + $("#message-text").val();
+		   $.ajax({
+				url         : "mkDirFolder",
+				method      : "GET",
+				data        : {
+					"mkDirText" : mkDirText 
+				},
+				success : function() {
+					alert("성공적으로 폴더 생성되었습니다.")
+					
+					/* location.reload(true); */
+				}
+		   });
+		});
 	}
 	
-	/* function F_FILEMultiUpload_Callback(files) {
-		for(var i = 0; i < files.length; i++) {
-			$("#downloadzone").append("<a href='/board/getFileDownload?filename="+encodeURI(files[i])+"'>"+files[i]+"</a>\n");
-		}
-	} */
+	
 </script>
 <body>
 	<div class="container">
 		<!-- Large modal -->
 		<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#my80sizeModal">File Upload</button>
-		
+		<button type="button" class="btn btn-primary" data-toggle="modal" id="mkFolder"
+		data-target="#exampleModal" data-whatever="@mdo">폴더 생성</button>
+
 		<div id="grid"></div>
 	</div>
 
 	<!-- 80% size Modal -->
 	<div class="modal fade" id="my80sizeModal" tabindex="-1" role="dialog" data-backdrop="static"
 		aria-labelledby="my80sizeModalLabel">
-		<div class="modal-dialog modal-80size" role="document">
+		<div class="modal-dialog_upload modal-80size" role="document">
 			<div class="modal-content modal-80size">
 				<div class="modal-header">
 					<h4 class="modal-title" id="myModalLabel">업로드 할 파일을 넣어주세요</h4>
@@ -190,9 +223,36 @@
 						<span aria-hidden="true">&times;</span>
 					</button>
 				</div>
-				<div class="modal-body" id="dropzone"> </div>
+				<div class="upload_modal-body" id="dropzone"> </div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">닫기</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
+		aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h4 class="modal-title" id="exampleModalLabel">생성할 폴더를 적어주세요</h4>
+					<button type="button" class="close" data-dismiss="modal"
+						aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					
+				</div>
+				<div class="modal-body">
+					<form>
+						<div class="form-group">
+							<textarea class="form-control" id="message-text"></textarea>
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" data-dismiss="modal" id="mkDirText">Send message</button>
 				</div>
 			</div>
 		</div>
