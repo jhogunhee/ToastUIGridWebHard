@@ -78,15 +78,21 @@ public class HomeController {
 	
 	@GetMapping("mkDirFolder")
 	@ResponseBody
-	public String mkDirFolder(@RequestParam Map<String, Object> param) {
+	public Map<String, Object> mkDirFolder(@RequestParam Map<String, Object> param) {
+		Map<String, Object> map = new HashMap<>();
+		
 		// 1. 해야 할일 path 경로를 설정한다
 		String path = "d:";
 		
 		File file = new File(path +  param.get("mkDirText"));
 		
-		file.mkdirs();
+		if(file.isDirectory()) {
+			map.put("message", "폴더가 이미 존재합니다.");
+		} else {
+			file.mkdirs();
+		}
 		
-		return null;
+		return map;
 	}
 	
 	@GetMapping("getFileDownload")

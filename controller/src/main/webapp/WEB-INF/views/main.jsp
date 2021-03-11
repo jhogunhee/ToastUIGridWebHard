@@ -190,10 +190,16 @@
 				data        : {
 					"mkDirText" : mkDirText 
 				},
-				success : function() {
-					alert("성공적으로 폴더 생성되었습니다.")
-					
+				success : function(res) {
+					if(res.message) {
+						alert("폴더가 이미 존재합니다.")
+					} else {
+						alert("성공적으로 폴더 생성되었습니다.")	
+					}
 					/* location.reload(true); */
+				}, 
+				error : function(res) {
+					
 				}
 		   });
 		});
